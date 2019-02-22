@@ -15,9 +15,9 @@ import (
 )
 
 // Connects to the given DB and returns all the tables present
-func FetchTablesFromDB() []string {
+func FetchTablesFromDB(dbCreds string) []string {
 	var dbTables []string
-	dbCreds := os.Getenv("RDS_CREDS")
+	// dbCreds := os.Getenv("RDS_CREDS")
 	db, err := sql.Open("mysql", dbCreds)
 
 	if err != nil {
@@ -28,6 +28,7 @@ func FetchTablesFromDB() []string {
 	}
 
 	dbName := strings.Split(dbCreds, "/")[1]
+	log.Print("Checking DB :: ", dbName)
 	sqlQuery := fmt.Sprintf("select table_name from information_schema.tables where table_schema='%s'", dbName)
 	rows, err := db.Query(sqlQuery)
 
@@ -44,18 +45,20 @@ func FetchTablesFromDB() []string {
 	return dbTables
 }
 
-func PublishResultsToSns(tables []string) {
+func PublishResultsToSns(event string, tables []string, env string, topicArn string, serviceName string) {
 	snsSvc := sns.New(session.New())
 	message, _ := json.Marshal(map[string]interface{}{
+		"event":          event,
+		"service_name":   serviceName,
 		"missing_tables": tables,
 		"time":           time.Now().Format("2009-02-01T15:04:05.999999-07:00"),
 		"region":         os.Getenv("AWS_REGION"),
-		"environment":    os.Getenv("ENVIRONMENT"),
+		"environment":    env,
 	})
 
 	publishParams := &sns.PublishInput{
 		Message:  aws.String(string(message)),
-		TopicArn: aws.String(os.Getenv("SNS_TOPIC_ARN")),
+		TopicArn: aws.String(topicArn),
 	}
 
 	resp, err := snsSvc.Publish(publishParams)

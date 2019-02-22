@@ -2,7 +2,6 @@ package tablehelpers
 
 import (
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -68,9 +67,9 @@ func isWeekly(m int, h int, wd int, cronExp []int) bool {
 //   and returns array of int values
 // If any of the value is not an int,
 //    -1 is will be the placeholder
-func parsedCronExp() []int {
+func parsedCronExp(cron string) []int {
 	var result []int
-	cronExp := strings.Split(os.Getenv("CRON_M_H_WD"), ".")
+	cronExp := strings.Split(cron, ".")
 
 	for _, i := range cronExp {
 		j, err := strconv.Atoi(i)
@@ -109,10 +108,10 @@ func SliceDifference(slice1 []string, slice2 []string) []string {
 
 // Checks CRON expression given
 //   and returns the table types to be checked now
-func fetchCheckableTableTypes() []string {
+func fetchCheckableTableTypes(cron string) []string {
 	var tableTypes []string
 
-	cronExp := parsedCronExp()
+	cronExp := parsedCronExp(cron)
 	log.Print("Preparing tables based on CRON expression", cronExp)
 
 	t := time.Now()
@@ -139,11 +138,11 @@ func fetchCheckableTableTypes() []string {
 //   by lambda for current time
 //   based on current time, CRON expression
 //   and models present as an ENV variable
-func FetchScheduledTables() []string {
+func FetchScheduledTables(models []string, cron string) []string {
 	var tables []string
 
-	tableTypes := fetchCheckableTableTypes()
-	models := strings.Split(os.Getenv("MODEL_NAMES"), ",")
+	tableTypes := fetchCheckableTableTypes(cron)
+	// models := strings.Split(modelNames, ",")
 
 	for _, model := range models {
 		for _, tableType := range tableTypes {
