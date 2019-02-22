@@ -46,4 +46,3 @@ AWS Lambda handler for Golang, which will monitor table creations in a Time-seri
      ``` "minute.hour.week_day" ```
 
 
-
