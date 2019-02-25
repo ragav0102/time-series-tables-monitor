@@ -51,7 +51,7 @@ func PublishResultsToSns(event string, tables []string, env string, topicArn str
 		"event":          event,
 		"service_name":   serviceName,
 		"missing_tables": tables,
-		"time":           time.Now().Format("2009-02-01T15:04:05.999999-07:00"),
+		"time":           time.Now().Format("2006-01-02T15:04:05.999999"),
 		"region":         os.Getenv("AWS_REGION"),
 		"environment":    env,
 	})
